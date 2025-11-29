@@ -1,7 +1,3 @@
-Since I cannot directly access your GitHub account to create repositories, I have generated the **complete starter kit** for you.
-
-Below is the file structure, the core code logic (C\# for Unity), and the `README.md` text. You can copy-paste these directly to build the prototype.
-
 ### 1\. Project Name & Description
 
 **Repository Name:** `lineage-of-the-arcane`
