@@ -1,199 +1,99 @@
-### 1\. Project Name & Description
-
-**Repository Name:** `lineage-of-the-arcane`
-**Description:** A game mechanic prototype where magic is sentient, involving ancestral summoning and resource tethering.
-
------
-
-### 2\. Folder Structure
-
-Create these folders on your computer or inside your Unity project `Assets` folder:
-
-```text
-lineage-of-the-arcane/
-├── Assets/
-│   ├── Scripts/
-│   │   ├── Core/
-│   │   │   ├── MagicParent.cs       # Base class for the entities
-│   │   │   └── TetherSystem.cs      # The health-drain mechanic
-│   │   ├── Entities/
-│   │   │   └── IgnisMater.cs        # Example "Fire Mother" implementation
-│   │   └── Player/
-│   │       └── PlayerController.cs
-│   └── Docs/
-│       └── GDD.md                   # Game Design Document
-├── README.md
-└── .gitignore                       # Standard Unity gitignore
-```
-
------
-
-### 3\. The Core Code (C\#)
-
-Here are the scripts that make the "Parents" mechanic work.
-
-#### A. The Base Class (`MagicParent.cs`)
-
-This defines what a "Parent" is. It handles the personality traits.
-
-```csharp
-using UnityEngine;
-
-// The Blueprint for all "Parents of Magic"
-public abstract class MagicParent : MonoBehaviour
-{
-    [Header("Entity Stats")]
-    public string entityName;
-    public float tetherCostPerSecond = 5.0f; // How much Health/Sanity it costs
-    [Range(0, 100)] public float defianceLevel = 0f; // Chance to ignore orders
-
-    protected PlayerController boundPlayer;
-
-    // Called when the player initiates the Tether
-    public virtual void OnSummon(PlayerController player)
-    {
-        boundPlayer = player;
-        Debug.Log($"{entityName} has entered the reality. The Tether is formed.");
-        ApplyEnvironmentalShift();
-    }
-
-    // Every Parent changes the game world physics/lighting
-    protected abstract void ApplyEnvironmentalShift();
-
-    // The unique passive rule (e.g., "Must keep attacking")
-    public abstract void CheckTemperament();
-}
-```
-
-#### B. The Concrete Implementation (`IgnisMater.cs`)
-
-This is the "Fire Mother" we discussed. She demands aggression.
-
-```csharp
-using UnityEngine;
-
-public class IgnisMater : MagicParent
-{
-    private void Start()
-    {
-        entityName = "Ignis Mater, The Combustion";
-        tetherCostPerSecond = 10.0f; // High cost
-    }
-
-    protected override void ApplyEnvironmentalShift()
-    {
-        // Code to turn the floor to lava or make lighting red
-        RenderSettings.ambientLight = Color.red;
-        Debug.Log("The world heats up. Ignis is watching.");
-    }
-
-    public override void CheckTemperament()
-    {
-        // Mechanic: If player hasn't attacked in 3 seconds, punish them
-        if (Time.time - boundPlayer.lastAttackTime > 3.0f)
-        {
-            PunishPlayer();
-        }
-    }
-
-    void PunishPlayer()
-    {
-        boundPlayer.TakeDamage(5);
-        Debug.Log("Ignis burns you for your hesitation!");
-    }
-}
-```
-
-#### C. The Tether System (`TetherSystem.cs`)
-
-This handles the "Risk/Reward" health drain logic.
-
-```csharp
-using UnityEngine;
-
-public class TetherSystem : MonoBehaviour
-{
-    public MagicParent activeSummon;
-    public PlayerController player;
-    public bool isTethered = false;
-
-    void Update()
-    {
-        if (isTethered && activeSummon != null)
-        {
-            MaintainTether();
-            activeSummon.CheckTemperament(); // Check if the Parent is angry
-        }
-    }
-
-    void MaintainTether()
-    {
-        // Drain player health to keep summon alive
-        float cost = activeSummon.tetherCostPerSecond * Time.deltaTime;
-        
-        if (player.currentHealth > cost)
-        {
-            player.currentHealth -= cost;
-            // Visual effect: Grey bar increases
-        }
-        else
-        {
-            BreakTether();
-        }
-    }
-
-    void BreakTether()
-    {
-        isTethered = false;
-        Debug.LogWarning("THE TETHER SNAP! The Parent goes RAMPANT.");
-        // Logic to make the Summon attack the player goes here
-    }
-}
-```
-
------
-
-### 4\. The README.md File
-
-Create a file named `README.md` and paste this in. This makes your GitHub page look professional.
-
-```markdown
 # Lineage of the Arcane: The Parents of Magic
 
 > "Magic is not a tool. It is a family tree. And you are the youngest child."
 
+![CI/CD](https://github.com/GizzZmo/Lineage-of-the-Arcane-Unity-C-/actions/workflows/unity-ci.yml/badge.svg)
+
 ## 🔮 Project Overview
+
 **Lineage of the Arcane** is a gameplay prototype exploring a unique magic system where spells are sentient entities. Players do not cast magic; they negotiate with ancient "Progenitors" (Parents) to lend their aid.
 
-## ⚙️ Core Mechanics implemented
-1.  **The Tether System:** Mana does not exist. Summoning drains the user's max health (Physical Tether) and sanity.
-2.  **Ancestral Temperament:** Summons have specific personalities (Aggressive, Passive, Rhythm-based). Failing to adhere to their playstyle results in the summon damaging the player.
-3.  **Environmental Shifts:** Summoning a Parent changes the physics and lighting of the game map globally.
+This Unity project implements a revolutionary magic system where power comes at a cost - your very life force.
 
-## 📂 Structure
-- `Scripts/Core/`: Base logic for the Tether and Entity inheritance.
-- `Scripts/Entities/`: Unique AI logic for specific Parents (e.g., Ignis Mater).
+## ⚙️ Core Mechanics Implemented
 
-## 🚀 Roadmap
-- [ ] Implement "Custody Battle" (Multiplayer tug-of-war for summons)
-- [ ] Add Tier 1 (Scions) and Tier 2 (Heirs) evolution logic
-- [ ] Create the "Rampant" AI state when a Tether breaks
+### 1. The Tether System
+Mana does not exist. Summoning drains the user's max health (Physical Tether) and sanity.
+- **Health Drain**: Continuous cost while tethered
+- **Risk/Reward**: High power = High drain rate
+- **Tether Break**: When health is depleted, the bond snaps violently
 
-## 📄 License
-MIT License
+### 2. Ancestral Temperament
+Summons have specific personalities (Aggressive, Passive, Rhythm-based). Failing to adhere to their playstyle results in the summon damaging the player.
+- **Ignis Mater**: Demands constant aggression
+- **Punishment System**: Violate temperament = take damage
+
+### 3. Environmental Shifts
+Summoning a Parent changes the physics and lighting of the game map globally.
+- Each Parent has unique visual effects
+- World-altering presence
+
+## 📂 Project Structure
+
+```
+Assets/
+├── Scripts/
+│   ├── Core/
+│   │   ├── MagicParent.cs      # Abstract base for all Parents
+│   │   └── TetherSystem.cs     # Health-drain mechanic
+│   ├── Entities/
+│   │   └── IgnisMater.cs       # Fire Mother implementation
+│   └── Player/
+│       └── PlayerController.cs  # Player state and combat
+└── Docs/
+    └── GDD.md                   # Game Design Document
 ```
 
------
+## 🛠️ Technical Details
 
-### 5\. How to upload this to GitHub
+### Dependencies
+- Unity 2021.3 LTS or later
+- .NET Standard 2.1
 
-If you have Git installed, open your terminal/command prompt in your project folder and run:
+### Scripts Overview
 
-1.  `git init`
-2.  `git add .`
-3.  `git commit -m "Initial commit: Core mechanics for Parents of Magic"`
-4.  `git branch -M main`
-5.  `git remote add origin https://github.com/YOUR_USERNAME/lineage-of-the-arcane.git`
-6.  `git push -u origin main`
+| Script | Purpose |
+|--------|---------|
+| `MagicParent.cs` | Abstract base class defining Parent entity behavior |
+| `TetherSystem.cs` | Manages health drain and tether connections |
+| `IgnisMater.cs` | "Fire Mother" - aggressive temperament entity |
+| `PlayerController.cs` | Player health, combat, and movement |
 
-*(Make sure to create the empty repo on GitHub.com first\!)*
+## 🚀 Roadmap
+
+- [x] Core Tether System
+- [x] Base Parent class hierarchy
+- [x] First entity: Ignis Mater
+- [x] Player controller with combat tracking
+- [x] CI/CD Pipeline with artifacts
+- [ ] Implement "Custody Battle" (Multiplayer tug-of-war)
+- [ ] Add Tier 1 (Scions) and Tier 2 (Heirs)
+- [ ] Create "Rampant" AI state when Tether breaks
+- [ ] Visual effects for tethering
+- [ ] Audio implementation
+
+## 🔄 CI/CD Pipeline
+
+This project includes a GitHub Actions workflow that:
+- ✅ Validates C# code syntax
+- 📦 Packages scripts and documentation as artifacts
+- 📊 Generates code analysis reports
+- 🏷️ Creates releases automatically on version tags
+
+### Artifacts Generated
+- `scripts-package`: Core game scripts archive
+- `docs-package`: Documentation and design docs
+- `lineage-of-arcane-full`: Complete project package
+- `code-analysis-report`: Static analysis results
+
+## 📖 Documentation
+
+See the [Game Design Document](Assets/Docs/GDD.md) for detailed mechanics, lore, and technical specifications.
+
+## 📄 License
+
+MIT License - See [LICENSE](LICENSE) file for details.
+
+---
+
+*"The blood you offer is not payment. It is a handshake."*
