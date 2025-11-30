@@ -3,6 +3,7 @@ using UnityEngine;
 /// <summary>
 /// Ember Scion - A Tier 1 descendant of Ignis Mater.
 /// Less demanding than Ignis Mater but still requires aggression.
+/// Tethering with Ember also builds affinity with Ignis Mater.
 /// </summary>
 public class EmberScion : Scion
 {
@@ -16,6 +17,7 @@ public class EmberScion : Scion
     private void Start()
     {
         entityName = "Ember, The Spark";
+        entityId = "EmberScion";
         parentLineage = "Ignis Mater";
         tetherCostPerSecond = 5.0f; // Lower base cost than Ignis
         
@@ -54,6 +56,10 @@ public class EmberScion : Scion
         {
             ApplyPunishment(basePunishmentDamage);
             Debug.Log("Ember flickers with disappointment at your hesitation.");
+        }
+        else
+        {
+            ApproveTemperament();
         }
     }
     

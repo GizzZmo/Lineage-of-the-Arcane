@@ -4,13 +4,14 @@ using UnityEngine;
 /// Base class for Tier 2 entities - The Heirs.
 /// Heirs are the weakest magical entities with forgiving temperaments.
 /// They have minimal environmental effects and low tether costs.
+/// Heirs build affinity very quickly due to their gentle nature.
 /// </summary>
 public abstract class Heir : MagicParent
 {
     [Header("Heir Configuration")]
     public string ancestralLine;              // The lineage they belong to
     public float effectRange = 5f;            // Very limited effect range
-    public float affinityBonus = 0.5f;        // Significantly reduced tether cost
+    public float heirAffinityBonus = 0.5f;    // Significantly reduced tether cost
     
     [Header("Heir Temperament")]
     public float temperamentGracePeriod = 10f;  // Long grace period before any check
@@ -21,6 +22,12 @@ public abstract class Heir : MagicParent
     public float bondStrength = 0f;             // Increases with successful tethering
     public float maxBondStrength = 100f;        // Maximum bond level
     public float bondGrowthRate = 1f;           // How fast bond grows per second
+    
+    [Header("Heir Affinity Bonuses")]
+    [Tooltip("Heirs grant bonus affinity to their ancestral lineage")]
+    public float ancestralAffinityBonus = 0.3f; // Bonus affinity added to parent and scion
+    [Tooltip("Multiplier for affinity gain rate (Heirs bond faster)")]
+    public float affinityGainMultiplier = 1.5f;
     
     protected override void ApplyEnvironmentalShift()
     {
@@ -40,7 +47,7 @@ public abstract class Heir : MagicParent
     public override void OnSummon(PlayerController player)
     {
         // Apply significant affinity bonus
-        tetherCostPerSecond *= affinityBonus;
+        tetherCostPerSecond *= heirAffinityBonus;
         
         base.OnSummon(player);
         Debug.Log($"Heir {entityName} of the {ancestralLine} bloodline emerges timidly.");
@@ -52,6 +59,51 @@ public abstract class Heir : MagicParent
         if (boundPlayer != null && bondStrength < maxBondStrength)
         {
             GrowBond();
+        }
+    }
+    
+    /// <summary>
+    /// Override tether maintained to add bonus affinity and faster growth.
+    /// Note: We do NOT call base.OnTetherMaintained() because we want complete control
+    /// over the affinity calculation for Heirs (using the multiplier instead of additive).
+    /// </summary>
+    public override void OnTetherMaintained(float deltaTime)
+    {
+        // Heirs give extra affinity due to their gentle nature
+        // Use multiplied time instead of base implementation to avoid double tracking
+        float bonusTime = deltaTime * affinityGainMultiplier;
+        AffinitySystem.Instance.AddTetherAffinity(entityId, bonusTime, isTemperamentSatisfied);
+        
+        // Also grant bonus affinity to the ancestral lineage
+        if (!string.IsNullOrEmpty(ancestralLine))
+        {
+            string parentId = GetAncestralParentId();
+            if (!string.IsNullOrEmpty(parentId))
+            {
+                AffinitySystem.Instance.AddTetherAffinity(parentId, deltaTime * ancestralAffinityBonus, true);
+            }
+        }
+    }
+    
+    /// <summary>
+    /// Gets the entity ID of the ancestral parent.
+    /// </summary>
+    protected virtual string GetAncestralParentId()
+    {
+        // Map ancestral line names to parent entity IDs
+        switch (ancestralLine)
+        {
+            case "Ignis":
+            case "Fire":
+                return "IgnisMater";
+            case "Aqua":
+            case "Water":
+                return "AquaPater";
+            case "Terra":
+            case "Earth":
+                return "TerraMater";
+            default:
+                return null;
         }
     }
     
@@ -74,6 +126,9 @@ public abstract class Heir : MagicParent
     public override void CheckTemperament()
     {
         if (boundPlayer == null) return;
+        
+        // Heirs are always temperament-satisfied by default
+        SetTemperamentSatisfied(true);
         
         if (isForgiving)
         {
@@ -107,6 +162,7 @@ public abstract class Heir : MagicParent
     {
         if (boundPlayer != null && !isForgiving)
         {
+            SetTemperamentSatisfied(false);
             float actualDamage = baseDamage * punishmentMultiplier;
             boundPlayer.TakeDamage(actualDamage);
             Debug.Log($"Heir {entityName} is upset. ({actualDamage} damage)");
@@ -123,14 +179,34 @@ public abstract class Heir : MagicParent
     /// 1. Heirs are too weak to enter a rampant state
     /// 2. They simply fade away instead of becoming hostile
     /// 3. This prevents the RampantState from being triggered
-    /// The boundPlayer reference is intentionally not cleared here to allow
-    /// for potential rebinding mechanics in the future.
+    /// However, we do record a reduced betrayal in the affinity system.
     /// </summary>
     public override void OnTetherBroken()
     {
         // Heirs don't go rampant - they simply fade away
         Debug.Log($"Heir {entityName} fades away with a sad expression...");
+        
+        // Record a smaller betrayal penalty for heirs using the proper AffinitySystem method
+        // Heirs are forgiving, so the penalty is only 5 instead of the default 15
+        AffinitySystem.Instance.OnTetherBetrayalWithPenalty(entityId, 5f);
+        
         // Intentionally NOT calling base.OnTetherBroken() - see method summary
+    }
+    
+    /// <summary>
+    /// Called when the tether is cleanly severed.
+    /// Heirs give extra affinity bonus when dismissed properly.
+    /// </summary>
+    public override void OnTetherSeveredCleanly()
+    {
+        // Use the AffinitySystem method that includes a bonus (3 extra affinity for heirs)
+        // This handles all the proper event firing and level updates
+        AffinitySystem.Instance.OnSuccessfulTetherWithBonus(entityId, 3f);
+        
+        // Clear the bound player reference (same as base would do)
+        boundPlayer = null;
+        
+        Debug.Log($"Heir {entityName} waves goodbye warmly, grateful for the gentle parting.");
     }
     
     /// <summary>

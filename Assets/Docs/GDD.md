@@ -40,7 +40,7 @@ In this game, magic is not a resource to be spent—it's a relationship to be ma
 |------|-------------|----------------|
 | Aggressive | Must attack frequently | Ignis Mater |
 | Passive | Must avoid combat | Aqua Pater |
-| Rhythmic | Must follow patterns | Tempus Mater |
+| Rhythmic | Must follow patterns | Terra Mater |
 | Sacrificial | Must take damage | Dolor Mater |
 
 **Punishment System:**
@@ -72,12 +72,15 @@ In this game, magic is not a resource to be spent—it's a relationship to be ma
 - Moderate tether cost
 - Local environmental effects
 - Simpler temperament requirements
+- Grant bonus affinity to their parent lineage when tethered
 
 ### Tier 2: The Heirs
 - Weakest magical entities
 - Low tether cost
 - Minimal environmental effects
 - Forgiving temperament
+- Build affinity very quickly due to their gentle nature
+- Do not go rampant - they simply fade away when tether breaks
 
 ---
 
@@ -89,24 +92,72 @@ When a Tether breaks unexpectedly (not manually severed), the Parent enters a **
 - It may attack the player or act chaotically
 - Environmental effects remain active
 - Player must flee or find a way to rebind
+- **Note:** Heirs do NOT enter a rampant state due to their gentle nature
 
 ---
 
-## Planned Features
+## Evolution/Affinity System
 
-### Custody Battle (Multiplayer)
+The Affinity System tracks the relationship between players and magical entities over time. Building strong bonds provides significant gameplay benefits.
+
+### Affinity Levels
+
+| Level | Threshold | Tether Cost Modifier | Description |
+|-------|-----------|---------------------|-------------|
+| Hostile | <20% with 3+ betrayals | 1.5x (50% increase) | Entity remembers betrayal |
+| Stranger | 0-19% | 1.0x (no change) | No relationship established |
+| Acquainted | 20-39% | 0.9x (10% reduction) | Beginning to know each other |
+| Bonded | 40-69% | 0.8x (20% reduction) | Established trust |
+| Devoted | 70-99% | 0.65x (35% reduction) | Deep connection |
+| Ascended | 100% | 0.5x (50% reduction) | Maximum affinity, special ability unlocked |
+
+### How Affinity is Gained
+
+- **Continuous Tethering:** +0.5 affinity per second while tethered
+- **Temperament Compliance:** +0.2 bonus per second when meeting temperament requirements
+- **Clean Sever:** +5 affinity when manually severing the tether safely
+- **Heir Bonus:** Heirs grant 1.5x normal affinity gain rate
+
+### How Affinity is Lost
+
+- **Betrayal (Forced Tether Break):** -15 affinity
+- **Multiple Betrayals:** After 3 betrayals with low affinity, entity becomes Hostile
+- **Heir Betrayal:** Only -5 affinity (they are more forgiving)
+
+### Cross-Lineage Affinity
+
+Tethering with lower-tier entities (Scions and Heirs) grants bonus affinity to their parent lineage:
+- **Scions:** Grant 50% of gained affinity to their Parent
+- **Heirs:** Grant 30% of gained affinity to their ancestral Parent
+
+This encourages players to build relationships from the bottom up, training with gentle Heirs before attempting to bond with powerful Parents.
+
+### Special Abilities (Ascended Level)
+
+Each Parent unlocks a unique special ability when the player reaches Ascended affinity:
+
+| Entity | Ability Name | Effect | Cooldown |
+|--------|-------------|--------|----------|
+| Ignis Mater | Inferno Embrace | Temporary invulnerability with AoE damage (5s duration) | 30s |
+| Aqua Pater | Tidal Sanctuary | Creates a healing zone restoring 5 HP/sec (8s duration) | 45s |
+| Terra Mater | Earthen Bulwark | Protective barrier absorbing 50 damage (10s duration) | 60s |
+
+### Affinity Memory
+
+Parents "remember" their relationship with players:
+- Affinity persists across play sessions
+- Hostile entities require more effort to rebuild trust
+- High affinity from previous sessions provides immediate benefits on re-summoning
+
+---
+
+## Custody Battle (Multiplayer)
+
 A competitive mode where two players attempt to tether the same Parent:
 - Both players' health drains faster
 - The Parent favors whoever better matches its temperament
 - One player eventually "wins" the Parent
 - Loser suffers backlash damage
-
-### Evolution System
-Players can strengthen bonds over time:
-- Successful tethering increases affinity
-- High affinity reduces tether cost
-- Max affinity unlocks special abilities
-- Parents may "remember" betrayals
 
 ---
 
@@ -118,7 +169,8 @@ Assets/Scripts/
 ├── Core/
 │   ├── MagicParent.cs     - Abstract base class for all entities
 │   ├── TetherSystem.cs    - Manages tether logic and health drain
-│   └── RampantState.cs    - Handles rampant AI behavior
+│   ├── RampantState.cs    - Handles rampant AI behavior
+│   └── AffinitySystem.cs  - Manages player-entity relationships
 ├── Entities/
 │   ├── IgnisMater.cs      - Fire Mother implementation
 │   ├── AquaPater.cs       - Water Father implementation
@@ -136,7 +188,8 @@ Assets/Scripts/
 ├── UI/
 │   ├── HealthBarUI.cs     - Health bar with burned health overlay
 │   ├── SanityIndicatorUI.cs - Sanity display with peripheral effects
-│   └── TetherDisplayUI.cs - Tether status and temperament indicator
+│   ├── TetherDisplayUI.cs - Tether status and temperament indicator
+│   └── AffinityDisplayUI.cs - Affinity level and progress display
 ├── Multiplayer/
 │   └── CustodyBattle.cs   - Multiplayer tug-of-war system
 └── Player/
@@ -155,6 +208,11 @@ MagicParent (Abstract)
         ↳ CandlelightHeir
     ↳ (Future) TempusMater
 
+AffinitySystem (Singleton)
+    → Tracks all player-entity relationships
+    → Provides tether cost modifiers
+    → Manages affinity events and notifications
+
 RampantState
     → Attached to MagicParent
     → Manages rampant behavior
@@ -162,6 +220,7 @@ RampantState
 TetherSystem
     → References MagicParent
     → References PlayerController
+    → Integrates with AffinitySystem
 
 TetherVisualEffect
     → References TetherSystem
@@ -182,11 +241,12 @@ UI Components
     → HealthBarUI → References PlayerController
     → SanityIndicatorUI → References PlayerController
     → TetherDisplayUI → References TetherSystem
+    → AffinityDisplayUI → References AffinitySystem, TetherSystem
 ```
 
 ---
 
-## UI Elements (Planned)
+## UI Elements
 
 ### Health Bar
 - Standard red bar for current health
@@ -200,23 +260,32 @@ UI Components
 - Visual line connecting player to summon
 - Color indicates Parent's current temperament status
 
+### Affinity Display
+- Shows current affinity level with color coding
+- Progress bar to next level
+- Special ability icon when unlocked
+- Session statistics (tethers, time spent)
+
 ---
 
-## Audio Design (Planned)
+## Audio Design
 
 - Each Parent has a unique ambient sound
 - Temperament violations trigger warning sounds
 - Rampant state has intense audio cues
 - Environmental shifts affect ambient soundscape
+- Affinity level changes trigger notification sounds
+- Special ability activation has unique audio cues
 
 ---
 
-## Art Direction (Planned)
+## Art Direction
 
 - Dark fantasy aesthetic
 - Each Parent has a distinct visual identity
 - Tether effects glow with Parent's color
 - Environmental shifts are dramatic but readable
+- Affinity UI uses color progression from gray to gold
 
 ---
 
@@ -241,8 +310,17 @@ UI Components
 
 ### Phase 4: Advanced Features ✅
 - [x] Custody Battle multiplayer mode
-- [ ] Evolution/Affinity system
+- [x] Evolution/Affinity system
 - [x] Rampant AI behaviors
+- [x] Special abilities for Ascended affinity
+- [x] Cross-lineage affinity bonuses
+
+### Phase 5: Future Features (Planned)
+- [ ] Additional Parents (Tempus Mater, Dolor Mater)
+- [ ] More Scions and Heirs for each lineage
+- [ ] Affinity-based visual changes for entities
+- [ ] Multiplayer affinity competition
+- [ ] Achievement system tied to affinity milestones
 
 ---
 

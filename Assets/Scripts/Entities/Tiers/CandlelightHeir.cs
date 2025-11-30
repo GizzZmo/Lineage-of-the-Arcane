@@ -3,6 +3,7 @@ using UnityEngine;
 /// <summary>
 /// Candlelight Heir - A Tier 2 descendant of the Ignis lineage.
 /// Very forgiving and builds bond with the player over time.
+/// Tethering with Candlelight also builds affinity with Ignis Mater and Ember Scion.
 /// </summary>
 public class CandlelightHeir : Heir
 {
@@ -17,6 +18,7 @@ public class CandlelightHeir : Heir
     private void Start()
     {
         entityName = "Candlelight, The Gentle Flame";
+        entityId = "CandlelightHeir";
         ancestralLine = "Ignis";
         tetherCostPerSecond = 2.0f; // Very low base cost
         
@@ -119,6 +121,9 @@ public class CandlelightHeir : Heir
         {
             pointLight.enabled = false;
         }
+        
+        // Call base to handle the reduced affinity penalty
+        base.OnTetherBroken();
     }
     
     /// <summary>
