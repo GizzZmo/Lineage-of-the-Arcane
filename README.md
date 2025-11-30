@@ -12,6 +12,27 @@
 
 This Unity project implements a revolutionary magic system where power comes at a cost - your very life force.
 
+## 📚 Documentation
+
+Comprehensive documentation is available in the [Wiki](wiki/Home.md):
+
+- **[Getting Started](wiki/Getting-Started.md)** - Setup and first steps
+- **[Core Concepts](wiki/Core-Concepts.md)** - Understanding the magic system
+- **[Project Structure](wiki/Project-Structure.md)** - Codebase organization
+- **[API Reference](wiki/API-Reference.md)** - Complete method documentation
+
+### System Documentation
+- [Tether System](wiki/Tether-System.md) - Health-drain magic binding
+- [Affinity System](wiki/Affinity-System.md) - Relationship tracking
+- [Rampant System](wiki/Rampant-System.md) - Hostile AI behavior
+- [Temperament System](wiki/Temperament-System.md) - Entity requirements
+
+### Entity Documentation
+- [Magic Parent Base Class](wiki/Magic-Parent.md) - Entity foundation
+- [Parents (Tier 0)](wiki/Parents.md) - Ignis Mater, Aqua Pater, Terra Mater
+- [Scions (Tier 1)](wiki/Scions.md) - Mid-tier descendants
+- [Heirs (Tier 2)](wiki/Heirs.md) - Gentle, forgiving entities
+
 ## ⚙️ Core Mechanics Implemented
 
 ### 1. The Tether System
