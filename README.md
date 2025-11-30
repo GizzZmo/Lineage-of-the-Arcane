@@ -4,7 +4,6 @@
 
 ![CI/CD](https://github.com/GizzZmo/Lineage-of-the-Arcane-Unity-C-/actions/workflows/unity-ci.yml/badge.svg)
 ![Security](https://github.com/GizzZmo/Lineage-of-the-Arcane-Unity-C-/actions/workflows/security.yml/badge.svg)
-[![CodeQL](https://github.com/GizzZmo/Lineage-of-the-Arcane-Unity-C-/actions/workflows/security.yml/badge.svg?event=schedule)](https://github.com/GizzZmo/Lineage-of-the-Arcane-Unity-C-/security)
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 
 ## 🔮 Project Overview
