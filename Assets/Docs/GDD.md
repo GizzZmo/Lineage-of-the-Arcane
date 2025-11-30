@@ -121,11 +121,22 @@ Assets/Scripts/
 │   └── RampantState.cs    - Handles rampant AI behavior
 ├── Entities/
 │   ├── IgnisMater.cs      - Fire Mother implementation
+│   ├── AquaPater.cs       - Water Father implementation
+│   ├── TerraMater.cs      - Earth Mother implementation
 │   └── Tiers/
 │       ├── Scion.cs       - Tier 1 base class
 │       ├── Heir.cs        - Tier 2 base class
 │       ├── EmberScion.cs  - Fire Scion implementation
 │       └── CandlelightHeir.cs - Fire Heir implementation
+├── Effects/
+│   └── TetherVisualEffect.cs - Line renderer for tether visualization
+├── Audio/
+│   ├── AudioManager.cs    - Singleton audio management system
+│   └── ParentAudioProfile.cs - Audio configuration for Parents
+├── UI/
+│   ├── HealthBarUI.cs     - Health bar with burned health overlay
+│   ├── SanityIndicatorUI.cs - Sanity display with peripheral effects
+│   └── TetherDisplayUI.cs - Tether status and temperament indicator
 ├── Multiplayer/
 │   └── CustodyBattle.cs   - Multiplayer tug-of-war system
 └── Player/
@@ -135,13 +146,14 @@ Assets/Scripts/
 ### Class Relationships
 ```
 MagicParent (Abstract)
-    ↳ IgnisMater (Tier 0 - Parent)
+    ↳ IgnisMater (Tier 0 - Parent, Aggressive)
+    ↳ AquaPater (Tier 0 - Parent, Passive)
+    ↳ TerraMater (Tier 0 - Parent, Rhythmic)
     ↳ Scion (Abstract - Tier 1)
         ↳ EmberScion
     ↳ Heir (Abstract - Tier 2)
         ↳ CandlelightHeir
-    ↳ (Future) AquaPater
-    ↳ (Future) TerraMater
+    ↳ (Future) TempusMater
 
 RampantState
     → Attached to MagicParent
@@ -151,12 +163,25 @@ TetherSystem
     → References MagicParent
     → References PlayerController
 
+TetherVisualEffect
+    → References TetherSystem
+    → Renders visual connection
+
+AudioManager (Singleton)
+    → Manages all game audio
+    → References ParentAudioProfile
+
 CustodyBattle
     → References MagicParent
     → References multiple PlayerControllers
 
 PlayerController
     → Tracked by MagicParent instances
+
+UI Components
+    → HealthBarUI → References PlayerController
+    → SanityIndicatorUI → References PlayerController
+    → TetherDisplayUI → References TetherSystem
 ```
 
 ---
@@ -204,15 +229,15 @@ PlayerController
 - [x] Ignis Mater (first Parent)
 - [x] Security scanning (CodeQL)
 
-### Phase 2: Content Expansion (In Progress)
-- [ ] Additional Parents (Aqua, Terra, Tempus)
+### Phase 2: Content Expansion ✅
+- [x] Additional Parents (Aqua Pater, Terra Mater)
 - [x] Tier 1 Scions (Base class + Ember Scion)
 - [x] Tier 2 Heirs (Base class + Candlelight Heir)
 
-### Phase 3: Polish
-- [ ] Visual effects for tethering
-- [ ] Audio implementation
-- [ ] UI systems
+### Phase 3: Polish ✅
+- [x] Visual effects for tethering
+- [x] Audio implementation
+- [x] UI systems
 
 ### Phase 4: Advanced Features ✅
 - [x] Custody Battle multiplayer mode

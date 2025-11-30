@@ -41,11 +41,22 @@ Assets/
 │   │   └── RampantState.cs     # Rampant AI behavior system
 │   ├── Entities/
 │   │   ├── IgnisMater.cs       # Fire Mother implementation
+│   │   ├── AquaPater.cs        # Water Father implementation
+│   │   ├── TerraMater.cs       # Earth Mother implementation
 │   │   └── Tiers/
 │   │       ├── Scion.cs        # Tier 1 base class
 │   │       ├── Heir.cs         # Tier 2 base class
 │   │       ├── EmberScion.cs   # Fire Scion implementation
 │   │       └── CandlelightHeir.cs  # Fire Heir implementation
+│   ├── Effects/
+│   │   └── TetherVisualEffect.cs   # Tether line renderer effects
+│   ├── Audio/
+│   │   ├── AudioManager.cs     # Sound management system
+│   │   └── ParentAudioProfile.cs   # Audio configuration for Parents
+│   ├── UI/
+│   │   ├── HealthBarUI.cs      # Health bar display
+│   │   ├── SanityIndicatorUI.cs    # Sanity indicator display
+│   │   └── TetherDisplayUI.cs  # Tether status display
 │   ├── Multiplayer/
 │   │   └── CustodyBattle.cs    # Multiplayer tug-of-war system
 │   └── Player/
@@ -70,10 +81,18 @@ Assets/
 | `Scion.cs` | Base class for Tier 1 entities |
 | `Heir.cs` | Base class for Tier 2 entities |
 | `IgnisMater.cs` | "Fire Mother" - aggressive temperament entity |
+| `AquaPater.cs` | "Water Father" - passive temperament entity |
+| `TerraMater.cs` | "Earth Mother" - rhythmic temperament entity |
 | `EmberScion.cs` | Tier 1 fire scion implementation |
 | `CandlelightHeir.cs` | Tier 2 fire heir implementation |
 | `CustodyBattle.cs` | Multiplayer tug-of-war battle system |
 | `PlayerController.cs` | Player health, combat, and movement |
+| `TetherVisualEffect.cs` | Line renderer for tether visualization |
+| `AudioManager.cs` | Singleton audio management system |
+| `ParentAudioProfile.cs` | ScriptableObject for Parent audio configuration |
+| `HealthBarUI.cs` | Health bar with burned health overlay |
+| `SanityIndicatorUI.cs` | Sanity display with peripheral effects |
+| `TetherDisplayUI.cs` | Tether status and temperament indicator |
 
 ## 🚀 Roadmap
 
@@ -86,10 +105,10 @@ Assets/
 - [x] Implement "Custody Battle" (Multiplayer tug-of-war)
 - [x] Add Tier 1 (Scions) and Tier 2 (Heirs)
 - [x] Create "Rampant" AI state when Tether breaks
-- [ ] Visual effects for tethering
-- [ ] Audio implementation
-- [ ] Additional Parents (Aqua Pater, Terra Mater)
-- [ ] UI systems (Health bar, Sanity indicator, Tether display)
+- [x] Visual effects for tethering
+- [x] Audio implementation
+- [x] Additional Parents (Aqua Pater, Terra Mater)
+- [x] UI systems (Health bar, Sanity indicator, Tether display)
 
 ## 🔄 CI/CD Pipeline
 
