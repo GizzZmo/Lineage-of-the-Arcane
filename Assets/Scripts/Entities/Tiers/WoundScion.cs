@@ -52,11 +52,18 @@ public class WoundScion : Scion
     
     /// <summary>
     /// Called when the player takes damage while tethered.
-    /// This should be hooked into the damage system.
+    /// This should be hooked into the damage system or called by PlayerController.
     /// </summary>
-    /// <param name="damage">Amount of damage taken.</param>
+    /// <param name="damage">Amount of damage taken. Must be non-negative.</param>
     public void OnPlayerTakeDamage(float damage)
     {
+        // Validate input
+        if (damage < 0)
+        {
+            Debug.LogWarning("[WOUND] OnPlayerTakeDamage received negative damage value.");
+            return;
+        }
+        
         damageAccumulated += damage;
         Debug.Log($"Wound appreciates your pain. ({damageAccumulated:F1}/{minimumSacrifice} this cycle)");
     }

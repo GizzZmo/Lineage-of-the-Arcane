@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 
 /// <summary>
 /// Manages visual effects that change based on affinity level with entities.
@@ -384,7 +385,7 @@ public class AffinityVisualEffect : MonoBehaviour
         StartCoroutine(FlashEffect(flashColor, duration));
     }
     
-    private System.Collections.IEnumerator FlashEffect(Color flashColor, float duration)
+    private IEnumerator FlashEffect(Color flashColor, float duration)
     {
         Color originalColor = currentColor;
         float elapsed = 0f;

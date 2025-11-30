@@ -51,12 +51,14 @@ public class AchievementUI : MonoBehaviour
     private Queue<AchievementDefinition> notificationQueue = new Queue<AchievementDefinition>();
     private bool isShowingNotification = false;
     private float notificationTimer;
+    private AchievementSystem achievementSystemRef;
     
     void Start()
     {
-        // Subscribe to achievement events
-        AchievementSystem.Instance.OnAchievementUnlocked += OnAchievementUnlocked;
-        AchievementSystem.Instance.OnAchievementProgress += OnAchievementProgress;
+        // Subscribe to achievement events and store reference for cleanup
+        achievementSystemRef = AchievementSystem.Instance;
+        achievementSystemRef.OnAchievementUnlocked += OnAchievementUnlocked;
+        achievementSystemRef.OnAchievementProgress += OnAchievementProgress;
         
         // Initialize notification panel
         if (unlockNotificationPanel != null)
@@ -71,11 +73,11 @@ public class AchievementUI : MonoBehaviour
     
     void OnDestroy()
     {
-        AchievementSystem instance = FindObjectOfType<AchievementSystem>();
-        if (instance != null)
+        // Unsubscribe using stored reference
+        if (achievementSystemRef != null)
         {
-            instance.OnAchievementUnlocked -= OnAchievementUnlocked;
-            instance.OnAchievementProgress -= OnAchievementProgress;
+            achievementSystemRef.OnAchievementUnlocked -= OnAchievementUnlocked;
+            achievementSystemRef.OnAchievementProgress -= OnAchievementProgress;
         }
     }
     

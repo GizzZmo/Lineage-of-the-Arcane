@@ -19,6 +19,8 @@ public class TempusMater : MagicParent
     [Header("Special Ability - Temporal Stasis")]
     [Tooltip("Duration of the time freeze in seconds")]
     public float stasisDuration = 6f;
+    [Tooltip("Time scale during stasis (near-freeze)")]
+    public float stasisTimeScale = 0.1f;
     [Tooltip("Cooldown between ability uses")]
     public float abilityCooldown = 50f;
     
@@ -188,7 +190,8 @@ public class TempusMater : MagicParent
         Debug.Log("[TEMPUS] TEMPORAL STASIS ACTIVATED! Time freezes around you!");
         
         // Near-complete time freeze (player can still move due to game logic)
-        Time.timeScale = 0.1f;
+        // Note: In a full implementation, a TimeManager would coordinate time effects
+        Time.timeScale = stasisTimeScale;
         
         // Visual effect: Deep purple ambient
         RenderSettings.ambientLight = new Color(0.4f, 0.2f, 0.6f);

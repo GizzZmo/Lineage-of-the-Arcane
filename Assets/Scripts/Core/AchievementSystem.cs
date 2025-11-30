@@ -132,20 +132,24 @@ public class AchievementSystem : MonoBehaviour
         InitializeAchievements();
     }
     
+    // Store reference for cleanup
+    private AffinitySystem affinitySystemRef;
+    
     void Start()
     {
-        // Subscribe to affinity events
-        AffinitySystem.Instance.OnAffinityLevelChanged += HandleAffinityLevelChanged;
-        AffinitySystem.Instance.OnAbilityUnlocked += HandleAbilityUnlocked;
+        // Subscribe to affinity events and store reference for cleanup
+        affinitySystemRef = AffinitySystem.Instance;
+        affinitySystemRef.OnAffinityLevelChanged += HandleAffinityLevelChanged;
+        affinitySystemRef.OnAbilityUnlocked += HandleAbilityUnlocked;
     }
     
     void OnDestroy()
     {
-        AffinitySystem affinityInstance = FindObjectOfType<AffinitySystem>();
-        if (affinityInstance != null)
+        // Unsubscribe using stored reference
+        if (affinitySystemRef != null)
         {
-            affinityInstance.OnAffinityLevelChanged -= HandleAffinityLevelChanged;
-            affinityInstance.OnAbilityUnlocked -= HandleAbilityUnlocked;
+            affinitySystemRef.OnAffinityLevelChanged -= HandleAffinityLevelChanged;
+            affinitySystemRef.OnAbilityUnlocked -= HandleAbilityUnlocked;
         }
     }
     

@@ -84,23 +84,26 @@ public class AffinityCompetition : MonoBehaviour
         competitors = new List<CompetitorData>();
     }
     
+    // Store reference to affinity system for cleanup
+    private AffinitySystem affinitySystemRef;
+    
     void Start()
     {
-        // Subscribe to affinity events
-        AffinitySystem.Instance.OnAffinityLevelChanged += HandleAffinityLevelChanged;
-        AffinitySystem.Instance.OnAffinityGained += HandleAffinityGained;
-        AffinitySystem.Instance.OnAffinityLost += HandleAffinityLost;
+        // Subscribe to affinity events and store reference for cleanup
+        affinitySystemRef = AffinitySystem.Instance;
+        affinitySystemRef.OnAffinityLevelChanged += HandleAffinityLevelChanged;
+        affinitySystemRef.OnAffinityGained += HandleAffinityGained;
+        affinitySystemRef.OnAffinityLost += HandleAffinityLost;
     }
     
     void OnDestroy()
     {
-        // Unsubscribe from events
-        AffinitySystem instance = FindObjectOfType<AffinitySystem>();
-        if (instance != null)
+        // Unsubscribe from events using stored reference
+        if (affinitySystemRef != null)
         {
-            instance.OnAffinityLevelChanged -= HandleAffinityLevelChanged;
-            instance.OnAffinityGained -= HandleAffinityGained;
-            instance.OnAffinityLost -= HandleAffinityLost;
+            affinitySystemRef.OnAffinityLevelChanged -= HandleAffinityLevelChanged;
+            affinitySystemRef.OnAffinityGained -= HandleAffinityGained;
+            affinitySystemRef.OnAffinityLost -= HandleAffinityLost;
         }
     }
     
