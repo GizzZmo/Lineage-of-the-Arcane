@@ -186,7 +186,9 @@ This project includes automated security scanning:
 ### Artifacts Generated
 - `scripts-package`: Core game scripts archive
 - `docs-package`: Documentation and design docs
-- `lineage-of-arcane-full`: Complete project package
+- `wiki-package`: Wiki documentation pages
+- `lineage-of-arcane-full`: Complete project package (includes wiki and asset manifest)
+- `asset-manifest`: JSON file with asset metadata and file listings
 - `code-analysis-report`: Static analysis results
 
 ## 📖 Documentation

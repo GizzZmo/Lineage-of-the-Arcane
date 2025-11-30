@@ -74,25 +74,103 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Create Assets Archive
+      - name: Generate Asset Manifest
         run: |
           mkdir -p artifacts
           
+          # Generate asset manifest with metadata
+          echo "=== Generating Asset Manifest ==="
+          cat > artifacts/asset-manifest.json << 'EOF'
+          {
+            "project": "Lineage of the Arcane",
+            "version": "${{ github.ref_name }}",
+            "build_date": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "commit_sha": "${{ github.sha }}",
+            "assets": {
+              "scripts": [],
+              "documentation": [],
+              "wiki": []
+            }
+          }
+          EOF
+          
+          # Create a proper manifest
+          echo '{' > artifacts/asset-manifest.json
+          echo '  "project": "Lineage of the Arcane",' >> artifacts/asset-manifest.json
+          echo '  "version": "'${{ github.ref_name }}'",' >> artifacts/asset-manifest.json
+          echo '  "build_date": "'$(date -u +%Y-%m-%dT%H:%M:%SZ)'",' >> artifacts/asset-manifest.json
+          echo '  "commit_sha": "'${{ github.sha }}'",' >> artifacts/asset-manifest.json
+          echo '  "branch": "'${{ github.ref_name }}'",' >> artifacts/asset-manifest.json
+          echo '  "repository": "'${{ github.repository }}'",' >> artifacts/asset-manifest.json
+          echo '  "assets": {' >> artifacts/asset-manifest.json
+          
+          # Count scripts
+          script_count=$(find Assets/Scripts -name "*.cs" 2>/dev/null | wc -l)
+          echo '    "scripts": {' >> artifacts/asset-manifest.json
+          echo '      "count": '$script_count',' >> artifacts/asset-manifest.json
+          echo '      "files": [' >> artifacts/asset-manifest.json
+          find Assets/Scripts -name "*.cs" 2>/dev/null | sort | while read file; do
+            size=$(stat -c%s "$file" 2>/dev/null || echo "0")
+            echo '        {"path": "'$file'", "size": '$size'},' >> artifacts/asset-manifest.json
+          done
+          # Remove trailing comma and close array
+          sed -i '$ s/,$//' artifacts/asset-manifest.json
+          echo '      ]' >> artifacts/asset-manifest.json
+          echo '    },' >> artifacts/asset-manifest.json
+          
+          # Count documentation
+          doc_count=$(find Assets/Docs -name "*.md" 2>/dev/null | wc -l)
+          echo '    "documentation": {' >> artifacts/asset-manifest.json
+          echo '      "count": '$doc_count',' >> artifacts/asset-manifest.json
+          echo '      "files": [' >> artifacts/asset-manifest.json
+          find Assets/Docs -name "*.md" 2>/dev/null | sort | while read file; do
+            size=$(stat -c%s "$file" 2>/dev/null || echo "0")
+            echo '        {"path": "'$file'", "size": '$size'},' >> artifacts/asset-manifest.json
+          done
+          sed -i '$ s/,$//' artifacts/asset-manifest.json
+          echo '      ]' >> artifacts/asset-manifest.json
+          echo '    },' >> artifacts/asset-manifest.json
+          
+          # Count wiki pages
+          wiki_count=$(find wiki -name "*.md" 2>/dev/null | wc -l)
+          echo '    "wiki": {' >> artifacts/asset-manifest.json
+          echo '      "count": '$wiki_count',' >> artifacts/asset-manifest.json
+          echo '      "files": [' >> artifacts/asset-manifest.json
+          find wiki -name "*.md" 2>/dev/null | sort | while read file; do
+            size=$(stat -c%s "$file" 2>/dev/null || echo "0")
+            echo '        {"path": "'$file'", "size": '$size'},' >> artifacts/asset-manifest.json
+          done
+          sed -i '$ s/,$//' artifacts/asset-manifest.json
+          echo '      ]' >> artifacts/asset-manifest.json
+          echo '    }' >> artifacts/asset-manifest.json
+          
+          echo '  }' >> artifacts/asset-manifest.json
+          echo '}' >> artifacts/asset-manifest.json
+          
+          echo "Asset manifest generated:"
+          cat artifacts/asset-manifest.json
+
+      - name: Create Assets Archive
+        run: |
           # Package Scripts
           echo "Packaging Scripts..."
           tar -czvf artifacts/scripts-package.tar.gz Assets/Scripts/
           
-          # Package Documentation
+          # Package Documentation (including wiki)
           echo "Packaging Documentation..."
           tar -czvf artifacts/docs-package.tar.gz Assets/Docs/ README.md LICENSE
           
-          # Create combined package
-          echo "Creating combined package..."
-          tar -czvf artifacts/lineage-of-arcane-full.tar.gz Assets/ README.md LICENSE
+          # Package Wiki separately
+          echo "Packaging Wiki..."
+          tar -czvf artifacts/wiki-package.tar.gz wiki/
           
-          # Generate checksums
+          # Create combined package (includes wiki)
+          echo "Creating combined package..."
+          tar -czvf artifacts/lineage-of-arcane-full.tar.gz Assets/ wiki/ README.md LICENSE artifacts/asset-manifest.json
+          
+          # Generate checksums for all packages
           cd artifacts
-          sha256sum *.tar.gz > checksums.sha256
+          sha256sum *.tar.gz asset-manifest.json > checksums.sha256
           cat checksums.sha256
 
       - name: Upload Scripts Artifact
@@ -116,6 +194,20 @@ jobs:
           path: |
             artifacts/lineage-of-arcane-full.tar.gz
             artifacts/checksums.sha256
+          retention-days: 90
+
+      - name: Upload Wiki Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: wiki-package
+          path: artifacts/wiki-package.tar.gz
+          retention-days: 30
+
+      - name: Upload Asset Manifest
+        uses: actions/upload-artifact@v4
+        with:
+          name: asset-manifest
+          path: artifacts/asset-manifest.json
           retention-days: 90
 
   code-analysis:
@@ -208,6 +300,8 @@ jobs:
           cp release-artifacts/lineage-of-arcane-full/*.sha256 release/ || true
           cp release-artifacts/scripts-package/*.tar.gz release/ || true
           cp release-artifacts/docs-package/*.tar.gz release/ || true
+          cp release-artifacts/wiki-package/*.tar.gz release/ || true
+          cp release-artifacts/asset-manifest/*.json release/ || true
           ls -la release/
 
       - name: Create Release
@@ -216,6 +310,7 @@ jobs:
           files: |
             release/*.tar.gz
             release/*.sha256
+            release/*.json
           generate_release_notes: true
           draft: false
           prerelease: ${{ contains(github.ref, 'alpha') || contains(github.ref, 'beta') }}
@@ -254,7 +349,9 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "- 📦 **scripts-package**: Core game scripts" >> $GITHUB_STEP_SUMMARY
           echo "- 📄 **docs-package**: Documentation and design documents" >> $GITHUB_STEP_SUMMARY
+          echo "- 📚 **wiki-package**: Wiki documentation pages" >> $GITHUB_STEP_SUMMARY
           echo "- 🎁 **lineage-of-arcane-full**: Complete project package" >> $GITHUB_STEP_SUMMARY
+          echo "- 📋 **asset-manifest**: Asset metadata and file listing" >> $GITHUB_STEP_SUMMARY
           echo "- 📊 **code-analysis-report**: Static analysis results" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "---" >> $GITHUB_STEP_SUMMARY
