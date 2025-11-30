@@ -4,17 +4,22 @@ using UnityEngine;
 /// Base class for Tier 1 entities - The Scions.
 /// Scions are descendants of the Parents with moderate power.
 /// They have simpler temperament requirements and local environmental effects.
+/// They inherit the Affinity system from MagicParent but gain affinity faster.
 /// </summary>
 public abstract class Scion : MagicParent
 {
     [Header("Scion Configuration")]
     public string parentLineage;              // Which Parent they descend from
     public float localEffectRadius = 15f;     // Range of environmental effects
-    public float affinityBonus = 0.8f;        // Reduced tether cost multiplier
+    public float scionAffinityBonus = 0.8f;   // Reduced base tether cost multiplier
     
     [Header("Scion Temperament")]
     public float temperamentTolerance = 5f;   // Seconds before temperament check
     public float punishmentMultiplier = 0.5f; // Reduced punishment compared to Parents
+    
+    [Header("Scion Affinity Bonuses")]
+    [Tooltip("Scions grant bonus affinity to their parent lineage")]
+    public float parentAffinityBonus = 0.5f;  // Bonus affinity added to parent entity
     
     protected override void ApplyEnvironmentalShift()
     {
@@ -33,11 +38,52 @@ public abstract class Scion : MagicParent
     /// </summary>
     public override void OnSummon(PlayerController player)
     {
-        // Apply affinity bonus to reduce tether cost
-        tetherCostPerSecond *= affinityBonus;
+        // Apply scion-specific tether cost reduction
+        tetherCostPerSecond *= scionAffinityBonus;
         
         base.OnSummon(player);
         Debug.Log($"Scion {entityName} of the {parentLineage} lineage has answered the call.");
+    }
+    
+    /// <summary>
+    /// Override tether maintained to also grant bonus affinity to parent lineage.
+    /// </summary>
+    public override void OnTetherMaintained(float deltaTime)
+    {
+        base.OnTetherMaintained(deltaTime);
+        
+        // Scions grant bonus affinity to their parent lineage
+        if (!string.IsNullOrEmpty(parentLineage))
+        {
+            string parentId = GetParentEntityId();
+            if (!string.IsNullOrEmpty(parentId))
+            {
+                // Grant partial affinity to the parent entity as well
+                AffinitySystem.Instance.AddTetherAffinity(parentId, deltaTime * parentAffinityBonus, isTemperamentSatisfied);
+            }
+        }
+    }
+    
+    /// <summary>
+    /// Gets the entity ID of the parent lineage.
+    /// </summary>
+    protected virtual string GetParentEntityId()
+    {
+        // Map lineage names to parent entity IDs
+        switch (parentLineage)
+        {
+            case "Ignis Mater":
+            case "Ignis":
+                return "IgnisMater";
+            case "Aqua Pater":
+            case "Aqua":
+                return "AquaPater";
+            case "Terra Mater":
+            case "Terra":
+                return "TerraMater";
+            default:
+                return null;
+        }
     }
     
     /// <summary>
@@ -63,10 +109,20 @@ public abstract class Scion : MagicParent
     {
         if (boundPlayer != null)
         {
+            SetTemperamentSatisfied(false);
             float actualDamage = baseDamage * punishmentMultiplier;
             boundPlayer.TakeDamage(actualDamage);
             Debug.Log($"Scion {entityName} shows displeasure. ({actualDamage} damage)");
         }
+    }
+    
+    /// <summary>
+    /// Sets temperament as satisfied when the player is meeting requirements.
+    /// Call this from derived classes when temperament checks pass.
+    /// </summary>
+    protected void ApproveTemperament()
+    {
+        SetTemperamentSatisfied(true);
     }
     
     public override void OnTetherBroken()

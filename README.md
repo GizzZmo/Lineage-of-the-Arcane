@@ -23,12 +23,22 @@ Mana does not exist. Summoning drains the user's max health (Physical Tether) an
 ### 2. Ancestral Temperament
 Summons have specific personalities (Aggressive, Passive, Rhythm-based). Failing to adhere to their playstyle results in the summon damaging the player.
 - **Ignis Mater**: Demands constant aggression
+- **Aqua Pater**: Demands passivity - no combat
+- **Terra Mater**: Demands rhythmic, patterned actions
 - **Punishment System**: Violate temperament = take damage
 
 ### 3. Environmental Shifts
 Summoning a Parent changes the physics and lighting of the game map globally.
 - Each Parent has unique visual effects
 - World-altering presence
+
+### 4. Evolution/Affinity System
+Build relationships with magical entities over time:
+- **Affinity Levels**: Progress from Stranger → Acquainted → Bonded → Devoted → Ascended
+- **Reduced Costs**: Higher affinity means lower tether drain (up to 50% reduction)
+- **Special Abilities**: Reach Ascended level to unlock unique powers
+- **Betrayal Memory**: Entities remember broken tethers
+- **Cross-Lineage Bonding**: Training with Heirs and Scions builds affinity with their Parent
 
 ## 📂 Project Structure
 
@@ -38,7 +48,8 @@ Assets/
 │   ├── Core/
 │   │   ├── MagicParent.cs      # Abstract base for all Parents
 │   │   ├── TetherSystem.cs     # Health-drain mechanic
-│   │   └── RampantState.cs     # Rampant AI behavior system
+│   │   ├── RampantState.cs     # Rampant AI behavior system
+│   │   └── AffinitySystem.cs   # Evolution/Affinity tracking
 │   ├── Entities/
 │   │   ├── IgnisMater.cs       # Fire Mother implementation
 │   │   ├── AquaPater.cs        # Water Father implementation
@@ -56,7 +67,8 @@ Assets/
 │   ├── UI/
 │   │   ├── HealthBarUI.cs      # Health bar display
 │   │   ├── SanityIndicatorUI.cs    # Sanity indicator display
-│   │   └── TetherDisplayUI.cs  # Tether status display
+│   │   ├── TetherDisplayUI.cs  # Tether status display
+│   │   └── AffinityDisplayUI.cs    # Affinity level display
 │   ├── Multiplayer/
 │   │   └── CustodyBattle.cs    # Multiplayer tug-of-war system
 │   └── Player/
@@ -78,6 +90,7 @@ Assets/
 | `MagicParent.cs` | Abstract base class defining Parent entity behavior |
 | `TetherSystem.cs` | Manages health drain and tether connections |
 | `RampantState.cs` | Handles rampant AI behavior when tether breaks |
+| `AffinitySystem.cs` | Tracks player-entity relationships and provides benefits |
 | `Scion.cs` | Base class for Tier 1 entities |
 | `Heir.cs` | Base class for Tier 2 entities |
 | `IgnisMater.cs` | "Fire Mother" - aggressive temperament entity |
@@ -93,6 +106,28 @@ Assets/
 | `HealthBarUI.cs` | Health bar with burned health overlay |
 | `SanityIndicatorUI.cs` | Sanity display with peripheral effects |
 | `TetherDisplayUI.cs` | Tether status and temperament indicator |
+| `AffinityDisplayUI.cs` | Affinity level and progress display |
+
+## 🌟 Affinity System Details
+
+### Affinity Levels & Benefits
+
+| Level | Requirement | Tether Cost | Special |
+|-------|-------------|-------------|---------|
+| Hostile | 3+ betrayals | +50% | Entity remembers your treachery |
+| Stranger | Default | Normal | No relationship |
+| Acquainted | 20% affinity | -10% | Recognition |
+| Bonded | 40% affinity | -20% | Trust established |
+| Devoted | 70% affinity | -35% | Deep connection |
+| Ascended | 100% affinity | -50% | Special ability unlocked |
+
+### Special Abilities (Ascended)
+
+| Entity | Ability | Effect |
+|--------|---------|--------|
+| Ignis Mater | Inferno Embrace | 5s of invulnerability + AoE damage |
+| Aqua Pater | Tidal Sanctuary | 8s healing zone (5 HP/sec) |
+| Terra Mater | Earthen Bulwark | Absorbs 50 damage for 10s |
 
 ## 🚀 Roadmap
 
@@ -109,6 +144,7 @@ Assets/
 - [x] Audio implementation
 - [x] Additional Parents (Aqua Pater, Terra Mater)
 - [x] UI systems (Health bar, Sanity indicator, Tether display)
+- [x] Evolution/Affinity system with special abilities
 
 ## 🔄 CI/CD Pipeline
 
